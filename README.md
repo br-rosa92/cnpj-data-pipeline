@@ -65,6 +65,7 @@ KEEP_DOWNLOADED_FILES=false
 ## Schema
 
 > Documentação completa: [docs/data-schema.md](docs/data-schema.md)
+> Guia de conexão remota (VPS): [docs/remote-access.md](docs/remote-access.md)
 
 ```
 EMPRESAS (1) ─── (N) ESTABELECIMENTOS
