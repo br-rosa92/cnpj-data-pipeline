@@ -145,17 +145,32 @@ def buscar(filtros: dict) -> tuple[int, list[dict]]:
     where_sql = f"WHERE {' AND '.join(where)}" if where else ""
 
     offset = (filtros.get("page", 1) - 1) * filtros.get("page_size", 20)
-    sql_total = (
-        "SELECT count(*) AS total FROM estabelecimentos e "
-        "JOIN empresas emp ON emp.cnpj_basico = e.cnpj_basico "
-        f"{where_sql}"
-    )
-    total_row = db.fetch_one(sql_total, tuple(params))
-    total = int(total_row["total"]) if total_row else 0
+    total = _estimativa_total(where_sql, tuple(params))
 
     sql = _CONSULTA_BASE + f"\n{where_sql}" + "\nORDER BY emp.razao_social LIMIT %s OFFSET %s"
     rows = db.fetch_all(sql, tuple(params) + (filtros.get("page_size", 20), offset))
     return total, [_resumo_from_row(r) for r in rows]
+
+
+def _estimativa_total(where_sql: str, params: tuple) -> int:
+    """Estimativa de linhas via plano do planner (barato mesmo em 70M linhas).
+
+    O COUNT(*) exato em tabelas grandes demora minutos; a estimativa do
+    EXPLAIN retorna em milissegundos com precisao suficiente para paginacao.
+    """
+    sql = (
+        "EXPLAIN (FORMAT JSON) SELECT * FROM estabelecimentos e "
+        "JOIN empresas emp ON emp.cnpj_basico = e.cnpj_basico "
+        f"{where_sql}"
+    )
+    row = db.fetch_one(sql, params)
+    if not row:
+        return 0
+    plan = row["QUERY PLAN"] if "QUERY PLAN" in row else list(row.values())[0]
+    try:
+        return int(plan[0]["Plan"]["Plan Rows"])
+    except (TypeError, KeyError, IndexError, ValueError):
+        return 0
 
 
 def obter_referencia(tabela: str, codigo: str) -> dict | None:
