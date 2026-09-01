@@ -122,8 +122,9 @@ def buscar(filtros: dict) -> tuple[int, list[dict]]:
         params.append(uf)
     cnae = (filtros.get("cnae") or "").strip()
     if cnae:
-        where.append("e.cnae_fiscal_principal LIKE %s")
-        params.append(f"{cnae}%")
+        where.append("e.cnae_fiscal_principal >= %s AND e.cnae_fiscal_principal < %s")
+        params.append(cnae)
+        params.append(f"{cnae[:-1]}{chr(ord(cnae[-1]) + 1)}")
     porte = (filtros.get("porte") or "").strip()
     if porte:
         where.append("emp.porte = %s")
