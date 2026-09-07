@@ -86,3 +86,20 @@ class BuscaResultadoOut(BaseModel):
     page: int
     page_size: int
     items: list[BuscaItemOut]
+
+
+class ScoreOut(BaseModel):
+    cnpj: str
+    score: int
+    breakdown: dict
+    formula: str = "v1"
+    vertical: str | None = None
+
+
+class ScoreRequest(BaseModel):
+    cnpjs: list[str]
+
+
+class ScoreTopOut(BaseModel):
+    total: int
+    items: list[ScoreOut]

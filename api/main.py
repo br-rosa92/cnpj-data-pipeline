@@ -5,7 +5,7 @@ import logging
 from fastapi import FastAPI
 
 from api.database import db
-from api.routers import busca, cnpj, referencias
+from api.routers import busca, cnpj, referencias, score
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -21,6 +21,7 @@ app = FastAPI(
 app.include_router(cnpj.router)
 app.include_router(busca.router)
 app.include_router(referencias.router)
+app.include_router(score.router)
 
 
 @app.get("/health", tags=["health"])
